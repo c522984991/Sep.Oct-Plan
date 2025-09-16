@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Schedule for Sep / Oct 2025 — Work / Leave / Holiday</title>
+<style>
+  :root{
+    --bg:#f6f8fa; --card:#ffffff; --muted:#666; --accent:#0b84ff;
+    --work-color:#d1f0d6; --leave-color:#ffe6d6; --holiday-color:#ffd6e6;
+    --cell-w:64px; --cell-h:64px;
+    font-family: "Segoe UI", Roboto, "Arial", sans-serif;
+  }
+  body{background:var(--bg);color:#111;margin:0;padding:18px}
+  .wrap{max-width:1100px;margin:0 auto}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+  h1{margin:0;font-size:18px}
+  p.lead{margin:0;color:var(--muted);font-size:13px}
+  .controls{display:flex;gap:12px;align-items:center;margin:12px 0;flex-wrap:wrap}
+  .btn{padding:8px 12px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;border:none;cursor:pointer}
+  .mode {display:inline-flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:#fff;border:1px solid #eee}
+  .mode input{margin-right:6px}
+  .cal-grid{display:flex;gap:22px;flex-wrap:wrap}
+  .month{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 24px rgba(11,132,255,0.06)}
+  .month h3{margin:0 0 10px 0;font-size:16px}
+  .weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+  .weekday{font-size:12px;color:var(--muted);text-align:center}
+  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .day{width:var(--cell-w);height:var(--cell-h);background:#fafafa;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:6px;box-sizing:border-box;cursor:pointer;border:1px solid transparent}
+  .day.inactive{opacity:0.25;cursor:default}
+  .date-num{font-weight:700;font-size:14px}
+  .icon{margin-top:6px;font-size:18px}
+  .legend{display:flex;gap:12px;align-items:center;margin-top:10px}
+  .legend .item{display:flex;gap:6px;align-items:center;font-size:13px}
+  .swatch{width:18px;height:18px;border-radius:4px;display:inline-block}
+  .sw-work{background:var(--work-color);border:1px solid #9de29b}
+  .sw-leave{background:var(--leave-color);border:1px solid #ffb88a}
+  .sw-holiday{background:var(--holiday-color);border:1px solid #ff98c7}
+  aside.tools{margin-left:18px;padding:12px;background:#fff;border-radius:8px;min-width:240px}
+  .flexrow{display:flex;gap:12px;align-items:center}
+  .small{font-size:13px;color:var(--muted)}
+  .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  textarea{width:100%;height:120px;margin-top:8px;padding:8px;border-radius:6px;border:1px solid #eee;font-family:monospace}
+  footer{margin-top:14px;color:var(--muted);font-size:13px}
+  /* status styles */
+  .status-work{background:linear-gradient(180deg,var(--work-color),#e8fcea);border:1px solid #9de29b}
+  .status-leave{background:linear-gradient(180deg,var(--leave-color),#fff1e6);border:1px solid #ffb88a}
+  .status-holiday{background:linear-gradient(180deg,var(--holiday-color),#ffe4f0);border:1px solid #ff98c7}
+  @media (max-width:900px){ .cal-grid{flex-direction:column} aside.tools{min-width:auto} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Schedule for Sep / Oct 2025 — Work / Leave / Holiday</h1>
+      <p class="lead">Click a date to set status; right-click to clear. Statuses are saved locally (localStorage).</p>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="mode" title="Choose mode">
+      <label><input type="radio" name="mode" value="work" checked /> Work</label>
+      <label><input type="radio" name="mode" value="leave" /> Leave</label>
+      <label><input type="radio" name="mode" value="holiday" /> Holiday</label>
+    </div>
+
+    <div class="flexrow">
+      <button class="btn" id="exportJson">Export JSON</button>
+      <button class="btn" id="exportCsv">Export CSV</button>
+      <button class="btn" id="clearMonth">Clear Saved</button>
+    </div>
+
+    <div style="margin-left:auto" class="small">Hint: click a tile to set; right-click to clear a day.</div>
+  </div>
+
+  <div style="display:flex;gap:18px;align-items:flex-start" class="cal-grid">
+    <div class="month" id="monthSep">
+      <h3>September 2025</h3>
+      <div class="weekdays">
+        <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
+        <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+      </div>
+      <div class="days" id="daysSep"></div>
+      <div class="legend">
+        <div class="item"><span class="swatch sw-work"></span> Work</div>
+        <div class="item"><span class="swatch sw-leave"></span> Leave</div>
+        <div class="item"><span class="swatch sw-holiday"></span> Holiday</div>
+      </div>
+    </div>
+
+    <div class="month" id="monthOct">
+      <h3>October 2025</h3>
+      <div class="weekdays">
+        <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
+        <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+      </div>
+      <div class="days" id="daysOct"></div>
+      <div class="legend">
+        <div class="item"><span class="swatch sw-work"></span> Work</div>
+        <div class="item"><span class="swatch sw-leave"></span> Leave</div>
+        <div class="item"><span class="swatch sw-holiday"></span> Holiday</div>
+      </div>
+    </div>
+
+    <aside class="tools">
+      <div><strong>Tools</strong></div>
+      <div class="small" style="margin-top:8px">Current mode: <span id="curMode">Work</span></div>
+      <div class="actions">
+        <button id="markAllWork">Mark month as Work</button>
+        <button id="markAllLeave">Mark month as Leave</button>
+        <button id="markAllHoliday">Mark month as Holiday</button>
+      </div>
+      <div style="margin-top:10px">
+        <label class="small">Exported data (JSON / CSV) includes date + status</label>
+        <textarea id="out" readonly placeholder="Export output will appear here"></textarea>
+      </div>
+      <div style="margin-top:8px" class="small">Note: data stored in browser localStorage; clearing or switching browsers will lose data.</div>
+    </aside>
+  </div>
+
+  <footer>
+    <div class="small">If you need CSV import, month switching, or GitHub Pages packaging, tell me and I will add it.</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  // config
+  const year = 2025;
+  const months = [{m:9, id:'daysSep'},{m:10, id:'daysOct'}];
+  const STORAGE_KEY = 'my_schedule_2025_sep_oct_en';
+
+  // helpers
+  function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+  function firstWeekday(y,m){ return new Date(y, m-1, 1).getDay(); } // 0 Sun
+  function pad(n){ return n<10?'0'+n:n; }
+  function dateKey(y,m,d){ return `${y}-${pad(m)}-${pad(d)}`; }
+
+  // UI elements
+  const curModeLabel = document.getElementById('curMode');
+  let curMode = 'work'; // work / leave / holiday
+  document.querySelectorAll('input[name="mode"]').forEach(r=>{
+    r.addEventListener('change', (e)=>{ curMode = e.target.value; curModeLabel.textContent = (curMode==='work'?'Work':curMode==='leave'?'Leave':'Holiday'); });
+  });
+
+  // storage
+  let store = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+  // populate months
+  months.forEach(obj=>{
+    const m = obj.m, container = document.getElementById(obj.id);
+    // leading blanks
+    const first = firstWeekday(year,m);
+    for(let i=0;i<first;i++){
+      const blank = document.createElement('div'); blank.className='day inactive'; blank.innerHTML=''; container.appendChild(blank);
+    }
+    const dim = daysInMonth(year,m);
+    for(let d=1; d<=dim; d++){
+      const key = dateKey(year,m,d);
+      const cell = document.createElement('div');
+      cell.className='day';
+      cell.dataset.date = key;
+      cell.innerHTML = `<div class="date-num">${d}</div><div class="icon" aria-hidden="true"></div>`;
+      applyStatusToCell(cell, store[key]);
+      // click to set
+      cell.addEventListener('click', (ev)=>{
+        if(cell.classList.contains('inactive')) return;
+        setStatusForCell(cell, curMode);
+      });
+      // right-click to clear
+      cell.addEventListener('contextmenu', (ev)=>{
+        ev.preventDefault();
+        clearStatusForCell(cell);
+      });
+      container.appendChild(cell);
+    }
+  });
+
+  // apply visual
+  function applyStatusToCell(cell, status){
+    const icon = cell.querySelector('.icon');
+    cell.classList.remove('status-work','status-leave','status-holiday');
+    icon.textContent = '';
+    if(status==='work'){ cell.classList.add('status-work'); icon.textContent='💼'; }
+    else if(status==='leave'){ cell.classList.add('status-leave'); icon.textContent='🏖️'; }
+    else if(status==='holiday'){ cell.classList.add('status-holiday'); icon.textContent='📅'; }
+  }
+  function setStatusForCell(cell, mode){
+    const date = cell.dataset.date;
+    store[date] = mode;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    applyStatusToCell(cell, mode);
+  }
+  function clearStatusForCell(cell){
+    const date = cell.dataset.date;
+    delete store[date];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    applyStatusToCell(cell, null);
+  }
+
+  // buttons
+  document.getElementById('clearMonth').addEventListener('click', ()=>{
+    if(!confirm('Clear all saved statuses for Sep-Oct?')) return;
+    months.forEach(obj=>{
+      const days = document.getElementById(obj.id).querySelectorAll('.day');
+      days.forEach(c=>{ if(!c.classList.contains('inactive')) { clearStatusForCell(c); } });
+    });
+    document.getElementById('out').value = 'Cleared';
+  });
+  document.getElementById('markAllWork').addEventListener('click', ()=>bulkSet('work'));
+  document.getElementById('markAllLeave').addEventListener('click', ()=>bulkSet('leave'));
+  document.getElementById('markAllHoliday').addEventListener('click', ()=>bulkSet('holiday'));
+  function bulkSet(mode){
+    if(!confirm(`Mark all displayed dates as "${mode==='work'?'Work':mode==='leave'?'Leave':'Holiday'}'?`)) return;
+    months.forEach(obj=>{
+      document.getElementById(obj.id).querySelectorAll('.day').forEach(c=>{
+        if(!c.classList.contains('inactive')) setStatusForCell(c, mode);
+      });
+    });
+  }
+
+  // export
+  function exportJson(){
+    const data = [];
+    for(const key in store){ data.push({date:key,status:store[key]}); }
+    const txt = JSON.stringify(data, null, 2);
+    document.getElementById('out').value = txt;
+    downloadFile('schedule_sep_oct.json', txt);
+  }
+  function exportCsv(){
+    const rows = [['date','status']];
+    for(const key in store){ rows.push([key, store[key]]); }
+    const csv = rows.map(r=>r.map(cell=>`"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+    document.getElementById('out').value = csv;
+    downloadFile('schedule_sep_oct.csv', csv);
+  }
+  function downloadFile(filename, content){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], {type:'text/plain'}));
+    a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  document.getElementById('exportJson').addEventListener('click', exportJson);
+  document.getElementById('exportCsv').addEventListener('click', exportCsv);
+
+})();
+</script>
+</body>
+</html>
